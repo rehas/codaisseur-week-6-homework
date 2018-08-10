@@ -2,10 +2,21 @@
   "name": "homework-week-6-game-api-ts",
   "version": "1.0.0",
   "description": "Codaisseur Homework For Week6 TypeSctipt",
-  "main": "index.js",
+  "main": "target/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "node_modules/.bin/tsc -w",
+    "start": "nodemon target"
   },
   "author": "Berat Reha Sonmez",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "kcors": "^2.2.2",
+    "koa": "^2.5.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "routing-controllers": "^0.7.7",
+    "typeorm": "^0.2.7",
+    "typescript": "^3.0.1"
+  }
 }
