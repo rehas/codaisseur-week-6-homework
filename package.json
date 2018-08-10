@@ -1,0 +1,11 @@
+{
+  "name": "homework-week-6-game-api-ts",
+  "version": "1.0.0",
+  "description": "Codaisseur Homework For Week6 TypeSctipt",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Berat Reha Sonmez",
+  "license": "ISC"
+}
