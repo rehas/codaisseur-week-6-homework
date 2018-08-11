@@ -23,8 +23,8 @@ export default class GamesController{
   @Get('/games')
    async getAllGames() : Promise<gamesArrayObject> {
     console.log("first call to the api")
-    return {
-      games: await Game.find()
+     return {
+      games: (await Game.find()).sort((x,y)=>y.id-x.id)
     }
   }
 
