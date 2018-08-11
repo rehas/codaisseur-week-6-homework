@@ -1,5 +1,11 @@
-import { JsonController, Get, Body, Post, Put, Param, NotFoundError, BadRequestError, UnauthorizedError } from 'routing-controllers'
+import { JsonController, Get, Body, Post, Put, Param, NotFoundError, BadRequestError, UnauthorizedError, HttpCode } from 'routing-controllers'
 import Game from './entity'
+
+const moves = (board1, board2) => 
+  board1
+    .map((row, y) => row.filter((cell, x) => board2[y][x] !== cell))
+    .reduce((a, b) => a.concat(b))
+    .length
 
 type gamesArrayObject = {
   games : Game[]
@@ -8,6 +14,8 @@ type gamesArrayObject = {
 type newGameName = {
   name: string
 }
+
+const colorSelection = ['red','blue','green','yellow','magenta']
 
 @JsonController()
 export default class GamesController{
@@ -21,6 +29,7 @@ export default class GamesController{
   }
 
   @Post('/games')
+  @HttpCode(201)
   async creteNewGame(
     @Body() newName : newGameName
   ){
@@ -34,26 +43,34 @@ export default class GamesController{
     // entity.board = JSON.parse('{}')
   }
   @Put('/games/:id')
+  @HttpCode(206)
   async updateGame(
     @Param('id') id: number,
-    @Body () inputObj
+    @Body () input
   ){
+    const {color, board, name} = input
+    console.log(color, board, name)
     const entity = await Game.findOne(id)
-    // console.log("Input Object")
-    // console.log(inputObj)
-    const input = inputObj
-    if(entity) {
-      entity[Object.keys(input)[0]] = Object.values(input)[0]
-      try {
-        return entity.save()
-      } catch (error) {
-        console.log("Some error happened")
-        console.error(error)
-        // return error
+    if(!entity) throw NotFoundError
+    if (color) {
+      if(colorSelection.includes(color)) {
+        entity.color = color
+      }else{
+        throw new BadRequestError("Wrong color")
       }
-    }else{
-      return NotFoundError
     }
+    if (name)  entity.name =  name
+    if (board){
+      console.log(moves(board, entity.board))
+      if (moves(board, entity.board) === 1){
+        entity.board = board
+      } else if(moves(board, entity.board) >1){
+        throw new BadRequestError("Too many moves at once")
+      }else if(moves(board, entity.board) ===0 ){
+        throw new BadRequestError("No change detected on board")
+      }
+    }
+    return entity.save()
 
   }
 }

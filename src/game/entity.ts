@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate } from 'typeorm'
 import { BaseEntity } from 'typeorm/repository/BaseEntity'
 import { IsString, IsJSON} from 'class-validator'
-import { error } from 'util';
 import { UnauthorizedError } from '../../node_modules/routing-controllers';
 
 // type colorSelection = 'red' | 'blue' | 'green' | 'yellow' | 'magenta'
