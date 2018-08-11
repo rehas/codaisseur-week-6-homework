@@ -28,6 +28,13 @@ export default class GamesController{
     }
   }
 
+  @Get('/games/:id')
+  async getGameById(
+    @Param('id') id:number
+  ){
+    return await Game.findOne(id)
+  }
+
   @Post('/games')
   @HttpCode(201)
   async creteNewGame(
