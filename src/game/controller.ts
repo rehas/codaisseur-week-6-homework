@@ -1,4 +1,4 @@
-import { JsonController, Get, Body, Post, Put, Param, NotFoundError, BadRequestError, UnauthorizedError, HttpCode } from 'routing-controllers'
+import { JsonController, Get, Body, Post, Put, Param, NotFoundError, BadRequestError, HttpCode } from 'routing-controllers'
 import Game from './entity'
 
 const moves = (board1, board2) => 
@@ -22,7 +22,6 @@ export default class GamesController{
 
   @Get('/games')
    async getAllGames() : Promise<gamesArrayObject> {
-    console.log("first call to the api")
      return {
       games: (await Game.find()).sort((x,y)=>y.id-x.id)
     }
@@ -31,8 +30,10 @@ export default class GamesController{
   @Get('/games/:id')
   async getGameById(
     @Param('id') id:number
-  ){
-    return await Game.findOne(id)
+  ) : Promise<Game | undefined> {
+    const entity = await Game.findOne(id)
+    if(!entity) throw new NotFoundError("No such game found check id")
+    return entity
   }
 
   @Post('/games')
@@ -43,12 +44,8 @@ export default class GamesController{
     const entity = Game.create()
     entity.name = newName.name
     return entity.save()
-    // const {name, ...rest} = newGame
-    // console.log(name)
-    // console.log(rest)
-    //entity.color = ['red', 'blue', 'green', 'yellow', 'magenta'][Math.floor( Math.random() * 5)]
-    // entity.board = JSON.parse('{}')
   }
+
   @Put('/games/:id')
   @HttpCode(206)
   async updateGame(
@@ -56,9 +53,9 @@ export default class GamesController{
     @Body () input
   ){
     const {color, board, name} = input
-    console.log(color, board, name)
     const entity = await Game.findOne(id)
-    if(!entity) throw NotFoundError
+    if(!entity) throw new NotFoundError("No such game found, check id")
+
     if (color) {
       if(colorSelection.includes(color)) {
         entity.color = color
@@ -66,43 +63,23 @@ export default class GamesController{
         throw new BadRequestError("Wrong color")
       }
     }
+
     if (name)  entity.name =  name
-    if (board){
-      console.log(moves(board, entity.board))
-      if (moves(board, entity.board) === 1){
-        entity.board = board
-      } else if(moves(board, entity.board) >1){
-        throw new BadRequestError("Too many moves at once")
-      }else if(moves(board, entity.board) ===0 ){
-        throw new BadRequestError("No change detected on board")
+
+    if(board){
+      if (board.length ===3 && board[0].length ===3 && board[1].length===3 && board[2].length ===3 ){
+        const movesDiff = moves(board, entity.board)
+        if (movesDiff === 1){
+          entity.board = board
+        } else if(movesDiff >1){
+          throw new BadRequestError("Too many moves at once")
+        }else if(movesDiff ===0 ){
+          throw new BadRequestError("No change detected on board")
+        }
+      }else{
+        throw new BadRequestError("Check board shape")
       }
     }
     return entity.save()
-
   }
 }
-
-
-//   @Get('/api/:userid/ads')
-//   getAdsForUserId(
-//     @Param('userid') userid: number
-//   ) : number[] {
-//     console.log(`Showing ads for ${userid}`)
-//     return [userid, userid]
-//   }
-
-//   @Get('/api/ads/:adid')
-//   async getAdsById(
-//     @Param('adid') adid : number
-//   ) : Promise<Advertisement | undefined> {
-//     console.log(`showing ad number ${adid}`)
-//     return await Advertisement.findOne(adid)
-//   }
-
-//   @Post('/api/ads')
-//   async creteNewAd(
-//     @Body() newAd :Advertisement
-//   ){
-//     return newAd.save()
-//   }
-// }
