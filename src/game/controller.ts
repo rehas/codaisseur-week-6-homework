@@ -1,13 +1,16 @@
-import { JsonController, Get, Body, Post } from 'routing-controllers'
+import { JsonController, Get, Body, Post, Put, Param, NotFoundError } from 'routing-controllers'
 import Game from './entity'
 
 type gamesArrayObject = {
   games : Game[]
 }
 
+type newGameName = {
+  name: string
+}
+
 @JsonController()
 export default class GamesController{
-
 
   @Get('/games')
    async getAllGames() : Promise<gamesArrayObject> {
@@ -19,16 +22,33 @@ export default class GamesController{
 
   @Post('/games')
   async creteNewGame(
-    @Body() newGame : Game
+    @Body() newName : newGameName
   ){
-    const {name, ...rest} = newGame
-    console.log(name)
-    console.log(rest)
-    const entity = Game.create(rest)
-    entity.name = name
-    entity.color = ['red', 'blue', 'green', 'yellow', 'magenta'][Math.floor( Math.random() * 5)]
-    entity.board = JSON.stringify([])
+    const entity = Game.create()
+    entity.name = newName.name
     return entity.save()
+    // const {name, ...rest} = newGame
+    // console.log(name)
+    // console.log(rest)
+    //entity.color = ['red', 'blue', 'green', 'yellow', 'magenta'][Math.floor( Math.random() * 5)]
+    // entity.board = JSON.parse('{}')
+  }
+  @Put('/games/:id')
+  async updateGame(
+    @Param('id') id: number,
+    @Body () inputObj
+  ){
+    const entity = await Game.findOne(id)
+    console.log("Input Object")
+    console.log(inputObj)
+    const input = inputObj
+    if(entity) {
+      entity[Object.keys(input)[0]] = Object.values(input)[0]
+      return entity.save()
+    }else{
+      return NotFoundError
+    }
+
   }
 }
 
