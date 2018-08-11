@@ -1,9 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BeforeUpdate } from 'typeorm'
 import { BaseEntity } from 'typeorm/repository/BaseEntity'
 import { IsString, IsJSON} from 'class-validator'
+import { error } from 'util';
+import { UnauthorizedError } from '../../node_modules/routing-controllers';
+
+// type colorSelection = 'red' | 'blue' | 'green' | 'yellow' | 'magenta'
 
 @Entity()
 export default class Game extends BaseEntity {
+
+  getColor() {
+    return this.color
+  }
   
   @PrimaryGeneratedColumn()
   id : number
@@ -23,10 +31,24 @@ export default class Game extends BaseEntity {
   @BeforeInsert()
   setGame(){
     // Set color
-    this.color = ['red', 'blue', 'green', 'yellow', 'magenta'][Math.floor( Math.random() * 5)]
+    const newColor = ['red', 'blue', 'green', 'yellow', 'magenta'][Math.floor( Math.random() * 5)] 
+    this.color = newColor
     // Set board
-    this.board = JSON.parse('[]')
-
+    const defaultBoard = [
+      ['o', 'o', 'o'],
+      ['o', 'o', 'o'],
+      ['o', 'o', 'o']
+    ]
+    this.board = JSON.parse( JSON.stringify( defaultBoard))
   }
-  
+
+  @BeforeUpdate()
+  // check color
+  updateValidations(){
+    console.log("color")
+    if(!['red', 'blue', 'green', 'yellow', 'magenta'].includes(this.getColor())){
+      console.log("invalid color")
+      throw new UnauthorizedError("color can only be 'red', 'blue', 'green', 'yellow', 'magenta'")
+    }  
+  }
 }

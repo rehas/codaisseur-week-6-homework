@@ -1,4 +1,4 @@
-import { JsonController, Get, Body, Post, Put, Param, NotFoundError } from 'routing-controllers'
+import { JsonController, Get, Body, Post, Put, Param, NotFoundError, BadRequestError, UnauthorizedError } from 'routing-controllers'
 import Game from './entity'
 
 type gamesArrayObject = {
@@ -39,12 +39,18 @@ export default class GamesController{
     @Body () inputObj
   ){
     const entity = await Game.findOne(id)
-    console.log("Input Object")
-    console.log(inputObj)
+    // console.log("Input Object")
+    // console.log(inputObj)
     const input = inputObj
     if(entity) {
       entity[Object.keys(input)[0]] = Object.values(input)[0]
-      return entity.save()
+      try {
+        return entity.save()
+      } catch (error) {
+        console.log("Some error happened")
+        console.error(error)
+        // return error
+      }
     }else{
       return NotFoundError
     }
